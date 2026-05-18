@@ -54,7 +54,7 @@ app.post('/api/create-order', async (req, res) => {
         });
         razorpayOrderId = rzpOrder.id;
       } catch (rzpErr) {
-        console.error('Razorpay order error:', rzpErr.message);
+        console.error('Razorpay order error FULL:', JSON.stringify(rzpErr), rzpErr.message, rzpErr.statusCode, rzpErr.error);
         // Continue without razorpay in dev
       }
     }
