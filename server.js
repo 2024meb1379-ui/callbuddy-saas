@@ -44,8 +44,8 @@ app.post('/api/create-order', async (req, res) => {
       try {
         const Razorpay = require('razorpay');
         const razorpay = new Razorpay({
-          key_id: process.env.RAZORPAY_KEY_ID,
-          key_secret: process.env.RAZORPAY_KEY_SECRET
+          key_id: process.env.RAZORPAY_KEY_ID || 'rzp_test_Sqiz4oODb5syJ9',
+          key_secret: process.env.RAZORPAY_KEY_SECRET || '4ETe4I7xWvU31YiN0AZePcly'
         });
         const rzpOrder = await razorpay.orders.create({
           amount: selectedPlan.amountINR * 100, // paise
