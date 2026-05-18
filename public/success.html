@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>You're all set! — CallBuddy AI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #0a0a0f;
+      --card: #13131f;
+      --accent: #7f77dd;
+      --text: #ffffff;
+      --muted: #666666;
+      --success: #4ade80;
+      --border: rgba(255, 255, 255, 0.08);
+      --font-display: "Outfit", system-ui, sans-serif;
+      --font-body: "DM Sans", system-ui, sans-serif;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--font-body);
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1.5rem;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, rgba(74, 222, 128, 0.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .success-card {
+      position: relative;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 1.25rem;
+      padding: 3rem 2.5rem;
+      max-width: 520px;
+      width: 100%;
+      text-align: center;
+    }
+
+    .check-circle {
+      width: 88px;
+      height: 88px;
+      margin: 0 auto 1.75rem;
+      border-radius: 50%;
+      background: rgba(74, 222, 128, 0.12);
+      border: 2px solid rgba(74, 222, 128, 0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .check-circle svg {
+      width: 44px;
+      height: 44px;
+      stroke: var(--success);
+      stroke-width: 2.5;
+      fill: none;
+    }
+
+    h1 {
+      font-family: var(--font-display);
+      font-size: clamp(1.75rem, 4vw, 2.25rem);
+      font-weight: 800;
+      margin-bottom: 1rem;
+      letter-spacing: -0.02em;
+    }
+
+    .subtext {
+      color: var(--muted);
+      font-size: 1rem;
+      line-height: 1.65;
+      margin-bottom: 1.5rem;
+    }
+
+    .email-confirm {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 0.5rem;
+      padding: 0.85rem 1rem;
+      font-size: 0.9rem;
+      color: var(--muted);
+      margin-bottom: 2rem;
+    }
+
+    .email-confirm strong {
+      display: block;
+      color: var(--text);
+      font-weight: 500;
+      margin-top: 0.25rem;
+      word-break: break-all;
+    }
+
+    .btn-home {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.9rem 2rem;
+      background: var(--accent);
+      color: #fff;
+      text-decoration: none;
+      border-radius: 0.5rem;
+      font-family: var(--font-display);
+      font-weight: 600;
+      font-size: 1rem;
+      transition: filter 0.2s;
+    }
+
+    .btn-home:hover { filter: brightness(1.1); }
+
+    .whatsapp {
+      display: block;
+      margin-top: 1.5rem;
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+
+    .whatsapp a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    .whatsapp a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <div class="success-card">
+    <div class="check-circle" aria-hidden="true">
+      <svg viewBox="0 0 24 24">
+        <path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round" />
+      </svg>
+    </div>
+
+    <h1>You're all set!</h1>
+
+    <p class="subtext">
+      Welcome to CallBuddy AI. We'll set up your AI receptionist within 24 hours. Check your email for next steps.
+    </p>
+
+    <p class="email-confirm">
+      Confirmation sent to:
+      <strong id="customer-email">your email</strong>
+    </p>
+
+    <a href="/index.html" class="btn-home">Back to Home</a>
+
+    <p class="whatsapp">
+      Questions? WhatsApp us at
+      <a href="https://wa.me/917206170244" target="_blank" rel="noopener noreferrer">+91 7206170244</a>
+    </p>
+  </div>
+
+  <script>
+    const email = sessionStorage.getItem("customerEmail") || sessionStorage.getItem("checkoutEmail");
+    const el = document.getElementById("customer-email");
+    if (email) {
+      el.textContent = email;
+    } else {
+      el.textContent = "your inbox";
+    }
+  </script>
+</body>
+</html>
