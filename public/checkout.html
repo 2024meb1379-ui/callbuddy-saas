@@ -4,313 +4,133 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Checkout — CallBuddy AI</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    background: #0a0a0f;
-    color: #fff;
-    font-family: 'DM Sans', sans-serif;
-    min-height: 100vh;
-  }
-  nav {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 20px 40px;
-    border-bottom: 1px solid #1a1a2e;
-    background: rgba(10,10,15,0.95);
-    position: sticky;
-    top: 0;
-    z-index: 100;
-  }
-  .logo {
-    font-family: 'Outfit', sans-serif;
-    font-size: 22px;
-    font-weight: 800;
-    color: #fff;
-    text-decoration: none;
-  }
-  .logo span { color: #7F77DD; }
-  .back-btn {
-    color: #666;
-    text-decoration: none;
-    font-size: 14px;
-    transition: color 0.2s;
-  }
-  .back-btn:hover { color: #fff; }
-
-  .page {
-    max-width: 1000px;
-    margin: 60px auto;
-    padding: 0 24px;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 32px;
-  }
-
-  @media (max-width: 700px) {
-    .page { grid-template-columns: 1fr; }
-    nav { padding: 16px 20px; }
-  }
-
-  /* LEFT — ORDER SUMMARY */
-  .order-card {
-    background: #13131f;
-    border: 1px solid #1e1e32;
-    border-radius: 16px;
-    padding: 36px;
-  }
-  .order-label {
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 2px;
-    color: #7F77DD;
-    text-transform: uppercase;
-    margin-bottom: 12px;
-  }
-  .plan-name {
-    font-family: 'Outfit', sans-serif;
-    font-size: 32px;
-    font-weight: 800;
-    margin-bottom: 4px;
-  }
-  .plan-price {
-    font-family: 'Outfit', sans-serif;
-    font-size: 48px;
-    font-weight: 800;
-    color: #7F77DD;
-    margin-bottom: 4px;
-  }
-  .plan-price span { font-size: 18px; color: #888; font-weight: 400; }
-  .divider { border: none; border-top: 1px solid #1e1e32; margin: 24px 0; }
-  .features-list { list-style: none; margin-bottom: 24px; }
-  .features-list li {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 8px 0;
-    font-size: 14px;
-    color: #ccc;
-  }
-  .features-list li::before {
-    content: '✓';
-    color: #7F77DD;
-    font-weight: 700;
-    flex-shrink: 0;
-  }
-  .trust-badges { display: flex; flex-direction: column; gap: 8px; }
-  .badge {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 13px;
-    color: #888;
-  }
-  .badge::before { content: '🔒'; font-size: 12px; }
-
-  /* RIGHT — FORM */
-  .form-card {
-    background: #13131f;
-    border: 1px solid #1e1e32;
-    border-radius: 16px;
-    padding: 36px;
-  }
-  .form-card h2 {
-    font-family: 'Outfit', sans-serif;
-    font-size: 26px;
-    font-weight: 700;
-    margin-bottom: 6px;
-  }
-  .form-card p {
-    color: #888;
-    font-size: 14px;
-    margin-bottom: 28px;
-  }
-  .field { margin-bottom: 18px; }
-  .field label {
-    display: block;
-    font-size: 13px;
-    color: #aaa;
-    margin-bottom: 6px;
-    font-weight: 500;
-  }
-  .field input {
-    width: 100%;
-    background: #0a0a0f;
-    border: 1px solid #2a2a3e;
-    border-radius: 10px;
-    padding: 14px 16px;
-    color: #fff;
-    font-size: 15px;
-    font-family: 'DM Sans', sans-serif;
-    transition: border-color 0.2s;
-    outline: none;
-  }
-  .field input:focus { border-color: #7F77DD; }
-  .field input::placeholder { color: #444; }
-
-  #error-msg {
-    background: rgba(255,68,68,0.1);
-    border: 1px solid rgba(255,68,68,0.3);
-    color: #ff4444;
-    padding: 12px 16px;
-    border-radius: 8px;
-    font-size: 14px;
-    margin-bottom: 16px;
-    display: none;
-  }
-
-  .pay-btn {
-    width: 100%;
-    background: #7F77DD;
-    color: #fff;
-    border: none;
-    border-radius: 12px;
-    padding: 18px;
-    font-size: 17px;
-    font-weight: 700;
-    font-family: 'Outfit', sans-serif;
-    cursor: pointer;
-    transition: background 0.2s, transform 0.1s;
-    margin-top: 8px;
-  }
-  .pay-btn:hover { background: #6c64c9; }
-  .pay-btn:active { transform: scale(0.99); }
-  .pay-btn:disabled { background: #444; cursor: not-allowed; }
-
-  .secure-note {
-    text-align: center;
-    font-size: 12px;
-    color: #555;
-    margin-top: 14px;
-  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0a0a0f; color: #fff; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+  .container { width: 100%; max-width: 480px; }
+  .logo { text-align: center; margin-bottom: 32px; }
+  .logo h1 { font-size: 24px; color: #7F77DD; font-weight: 700; }
+  .logo p { color: #666; font-size: 14px; margin-top: 4px; }
+  .card { background: #13131f; border: 1px solid #1e1e2e; border-radius: 16px; padding: 32px; }
+  .plan-summary { background: #0a0a0f; border: 1px solid #7F77DD33; border-radius: 10px; padding: 16px 20px; margin-bottom: 28px; display: flex; justify-content: space-between; align-items: center; }
+  .plan-name { font-size: 16px; font-weight: 600; color: #7F77DD; }
+  .plan-price { font-size: 22px; font-weight: 700; }
+  .plan-price span { font-size: 13px; color: #666; font-weight: 400; }
+  .form-group { margin-bottom: 18px; }
+  label { display: block; font-size: 13px; color: #888; margin-bottom: 6px; }
+  input { width: 100%; background: #0a0a0f; border: 1px solid #2a2a3e; border-radius: 8px; padding: 12px 14px; color: #fff; font-size: 15px; outline: none; transition: border-color 0.2s; }
+  input:focus { border-color: #7F77DD; }
+  input::placeholder { color: #444; }
+  .btn { width: 100%; background: #7F77DD; color: #fff; border: none; border-radius: 10px; padding: 15px; font-size: 16px; font-weight: 700; cursor: pointer; margin-top: 8px; transition: opacity 0.2s; }
+  .btn:hover { opacity: 0.9; }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .error { color: #ff4444; font-size: 13px; margin-top: 10px; text-align: center; min-height: 18px; }
+  .secure { text-align: center; color: #444; font-size: 12px; margin-top: 16px; }
 </style>
 </head>
 <body>
-
-<nav>
-  <a href="/index.html" class="logo">Call<span>Buddy</span> AI</a>
-  <a href="/index.html" class="back-btn">← Back to home</a>
-</nav>
-
-<div class="page">
-  <!-- LEFT -->
-  <div class="order-card">
-    <div class="order-label">Order Summary</div>
-    <div class="plan-name" id="plan-name">Pro</div>
-    <div class="plan-price" id="plan-price">$249<span>/mo</span></div>
-    <hr class="divider">
-    <ul class="features-list" id="features-list">
-      <li>1,000 minutes / month</li>
-      <li>3 phone numbers</li>
-      <li>24/7 AI call answering</li>
-      <li>Smart calendar sync</li>
-      <li>CRM integrations</li>
-      <li>SMS + email alerts</li>
-      <li>Advanced analytics</li>
-      <li>Priority support</li>
-    </ul>
-    <hr class="divider">
-    <div class="trust-badges">
-      <div class="badge">No contracts — cancel anytime</div>
-      <div class="badge">Setup in 10 minutes</div>
-      <div class="badge">AI live within 24 hours</div>
-    </div>
+<div class="container">
+  <div class="logo">
+    <h1>CallBuddy AI</h1>
+    <p>Complete your order below</p>
   </div>
-
-  <!-- RIGHT -->
-  <div class="form-card">
-    <h2>Complete your signup</h2>
-    <p>Enter your details to activate CallBuddy AI for your business.</p>
-
-    <div id="error-msg"></div>
-
-    <div class="field">
+  <div class="card">
+    <div class="plan-summary">
+      <div>
+        <div class="plan-name" id="plan-name">Pro Plan</div>
+        <div style="color:#666;font-size:13px;margin-top:2px;">AI Receptionist</div>
+      </div>
+      <div class="plan-price" id="plan-price">&#8377;24,900 <span>/mo</span></div>
+    </div>
+    <div class="form-group">
       <label>Full Name</label>
-      <input type="text" id="fullName" placeholder="John Smith" required>
+      <input type="text" id="fullName" placeholder="Your full name" required>
     </div>
-    <div class="field">
+    <div class="form-group">
       <label>Business Name</label>
-      <input type="text" id="businessName" placeholder="Smith Dental Clinic" required>
+      <input type="text" id="businessName" placeholder="Your business name" required>
     </div>
-    <div class="field">
-      <label>Email</label>
-      <input type="email" id="email" placeholder="john@smithclinic.com" required>
+    <div class="form-group">
+      <label>Email Address</label>
+      <input type="email" id="email" placeholder="you@example.com" required>
     </div>
-    <div class="field">
+    <div class="form-group">
       <label>Phone Number</label>
       <input type="tel" id="phone" placeholder="+91 98765 43210" required>
     </div>
-
-    <button class="pay-btn" id="pay-btn">Pay Now — $249</button>
-    <div class="secure-note">🔒 Secure checkout · Your info is encrypted</div>
+    <div class="error" id="error-msg"></div>
+    <button class="btn" id="pay-btn" onclick="startPayment()">Pay Now</button>
+    <div class="secure">&#128274; Secured by Razorpay</div>
   </div>
 </div>
-
 <script>
-const PLANS = {
-  starter: { name: 'Starter', price: '$149', amount: 149, features: ['500 minutes / month','1 phone number','24/7 AI call answering','Calendar sync','Lead logging','Email alerts'] },
-  pro:     { name: 'Pro',     price: '$249', amount: 249, features: ['1,000 minutes / month','3 phone numbers','24/7 AI call answering','Smart calendar sync','CRM integrations','SMS + email alerts','Advanced analytics','Priority support'] },
-  agency:  { name: 'Agency',  price: '$499', amount: 499, features: ['Unlimited minutes','Unlimited numbers','Everything in Pro','White label','Custom Alex voice','API access','Dedicated account manager'] }
+var PLANS = {
+  starter: { name: 'Starter Plan', amount: 1490000, display: '&#8377;14,900' },
+  pro:     { name: 'Pro Plan',     amount: 2490000, display: '&#8377;24,900' },
+  agency:  { name: 'Agency Plan',  amount: 4990000, display: '&#8377;49,900' }
 };
+var params = new URLSearchParams(window.location.search);
+var planKey = params.get('plan') || 'pro';
+var plan = PLANS[planKey] || PLANS.pro;
+document.getElementById('plan-name').textContent = plan.name;
+document.getElementById('plan-price').innerHTML = plan.display + ' <span>/mo</span>';
 
-const plan = new URLSearchParams(window.location.search).get('plan') || 'pro';
-const p = PLANS[plan] || PLANS.pro;
-
-document.getElementById('plan-name').textContent = p.name;
-document.getElementById('plan-price').innerHTML = p.price + '<span>/mo</span>';
-document.getElementById('pay-btn').textContent = 'Pay Now — ' + p.price;
-document.getElementById('features-list').innerHTML = p.features.map(f => '<li>' + f + '</li>').join('');
-
-document.getElementById('pay-btn').addEventListener('click', async function() {
-  const errDiv = document.getElementById('error-msg');
-  const btn = document.getElementById('pay-btn');
-
-  const fullName = document.getElementById('fullName').value.trim();
-  const businessName = document.getElementById('businessName').value.trim();
-  const email = document.getElementById('email').value.trim();
-  const phone = document.getElementById('phone').value.trim();
-
-  errDiv.style.display = 'none';
+function startPayment() {
+  var fullName = document.getElementById('fullName').value.trim();
+  var businessName = document.getElementById('businessName').value.trim();
+  var email = document.getElementById('email').value.trim();
+  var phone = document.getElementById('phone').value.trim();
+  var errDiv = document.getElementById('error-msg');
+  var btn = document.getElementById('pay-btn');
   errDiv.textContent = '';
-
   if (!fullName || !businessName || !email || !phone) {
     errDiv.textContent = 'Please fill in all fields.';
-    errDiv.style.display = 'block';
     return;
   }
-
   btn.disabled = true;
-  btn.textContent = 'Processing...';
-
-  try {
-    const res = await fetch('/api/create-order', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ plan, fullName, businessName, email, phone })
-    });
-
-    const json = await res.json();
-
-    if (res.ok) {
-      sessionStorage.setItem('customerEmail', email);
-      sessionStorage.setItem('customerName', fullName);
-      window.location.href = '/success.html';
-    } else {
-      errDiv.textContent = json.message || 'Something went wrong. Please try again.';
-      errDiv.style.display = 'block';
+  btn.textContent = 'Creating order...';
+  fetch('https://callbuddy-saas.onrender.com/api/create-order', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ plan: planKey, fullName: fullName, businessName: businessName, email: email, phone: phone })
+  })
+  .then(function(res) { return res.json().then(function(d) { return { ok: res.ok, data: d }; }); })
+  .then(function(r) {
+    if (!r.ok || !r.data.razorpayOrderId) {
+      errDiv.textContent = r.data.message || 'Could not create order. Try again.';
       btn.disabled = false;
-      btn.textContent = 'Pay Now — ' + p.price;
+      btn.textContent = 'Pay Now';
+      return;
     }
-  } catch (err) {
-    errDiv.textContent = 'Network error. Please check your connection and try again.';
-    errDiv.style.display = 'block';
+    var options = {
+      key: 'rzp_test_Sqiz4oODb5syJ9',
+      amount: r.data.amount,
+      currency: 'INR',
+      name: 'CallBuddy AI',
+      description: plan.name,
+      order_id: r.data.razorpayOrderId,
+      prefill: { name: fullName, email: email, contact: phone },
+      theme: { color: '#7F77DD' },
+      handler: function(response) {
+        window.location.href = 'https://callbuddy-saas.onrender.com/success.html?payment_id=' + response.razorpay_payment_id;
+      },
+      modal: {
+        ondismiss: function() {
+          btn.disabled = false;
+          btn.textContent = 'Pay Now';
+        }
+      }
+    };
+    var rzp = new Razorpay(options);
+    rzp.open();
+  })
+  .catch(function(err) {
+    errDiv.textContent = 'Network error. Try again in 30 seconds (server may be waking up).';
     btn.disabled = false;
-    btn.textContent = 'Pay Now — ' + p.price;
-  }
-});
+    btn.textContent = 'Pay Now';
+  });
+}
 </script>
 </body>
 </html>
