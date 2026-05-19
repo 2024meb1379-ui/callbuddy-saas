@@ -1,4 +1,7 @@
 require('dotenv').config();
+const rateLimit = require('express-rate-limit');
+const helmet = require('helmet');
+
 const express = require('express');
 const path = require('path');
 const fs = require('fs');
@@ -8,6 +11,25 @@ const crypto = require('crypto');
 
 const app = express();
 app.use(express.json());
+// Security headers
+app.use(helmet({ contentSecurityPolicy: false }));
+
+// Rate limiting - max 20 requests per 15 minutes per IP
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 20,
+  message: { success: false, message: 'Too many requests. Please try again later.' }
+});
+app.use('/api/', limiter);
+
+// Stricter limit on order creation - max 5 per 15 minutes
+const orderLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  message: { success: false, message: 'Too many order attempts. Please try again later.' }
+});
+app.use('/api/create-order', orderLimiter);
+
 // Supabase helper
 async function saveToSupabase(order) {
   try {
@@ -69,9 +91,33 @@ const ordersDir = path.join(__dirname, 'data', 'orders');
 if (!fs.existsSync(ordersDir)) fs.mkdirSync(ordersDir, { recursive: true });
 
 // ── CREATE ORDER ──────────────────────────────────────────────
+
+// Input validation helper
+function validateOrderInput(data) {
+  const { fullName, businessName, email, phone, plan } = data;
+  const errors = [];
+  
+  if (!fullName || fullName.trim().length < 2 || fullName.trim().length > 100) 
+    errors.push('Invalid name');
+  if (!businessName || businessName.trim().length < 2 || businessName.trim().length > 100) 
+    errors.push('Invalid business name');
+  if (!email || !/^[^s@]+@[^s@]+.[^s@]+$/.test(email)) 
+    errors.push('Invalid email');
+  if (!phone || !/^[0-9+-s]{7,15}$/.test(phone)) 
+    errors.push('Invalid phone');
+  if (!plan || !['starter', 'pro', 'agency'].includes(plan.toLowerCase())) 
+    errors.push('Invalid plan');
+  
+  return errors;
+}
 app.post('/api/create-order', async (req, res) => {
   try {
-    const { plan, fullName, businessName, email, phone } = req.body || {};
+    // Validate input
+    const validationErrors = validateOrderInput(req.body);
+    if (validationErrors.length > 0) {
+      return res.status(400).json({ success: false, message: validationErrors.join(', ') });
+    }
+        const { plan, fullName, businessName, email, phone } = req.body || {};
 
     if (!fullName || !businessName || !email || !phone) {
       return res.status(400).json({ success: false, message: 'All fields are required.' });
@@ -90,8 +136,8 @@ app.post('/api/create-order', async (req, res) => {
       try {
         const Razorpay = require('razorpay');
         const razorpay = new Razorpay({
-          key_id: process.env.RAZORPAY_KEY_ID || 'rzp_test_Sqiz4oODb5syJ9',
-          key_secret: process.env.RAZORPAY_KEY_SECRET || '4ETe4I7xWvU31YiN0AZePcly'
+          key_id: process.env.RAZORPAY_KEY_ID ,
+          key_secret: process.env.RAZORPAY_KEY_SECRET 
         });
         const rzpOrder = await razorpay.orders.create({
           amount: selectedPlan.amountINR * 100, // paise
