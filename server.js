@@ -8,6 +8,44 @@ const crypto = require('crypto');
 
 const app = express();
 app.use(express.json());
+// Supabase helper
+async function saveToSupabase(order) {
+  try {
+    const https = require('https');
+    const data = JSON.stringify(order);
+    await new Promise((resolve, reject) => {
+      const req = https.request({
+        hostname: 'kzvwdsccrdxrktkhlpxw.supabase.co',
+        path: '/rest/v1/orders',
+        method: 'POST',
+        headers: {
+          'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt6dndkc2NjcmR4cmt0a2xocHh3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkwNzYyMTEsImV4cCI6MjA5NDY1MjIxMX0.ufBIHpDOZrd3XRl-2e2tXVLyCuER9bC0fm_Pa9kxfCQ',
+          'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt6dndkc2NjcmR4cmt0a2xocHh3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkwNzYyMTEsImV4cCI6MjA5NDY1MjIxMX0.ufBIHpDOZrd3XRl-2e2tXVLyCuER9bC0fm_Pa9kxfCQ',
+          'Content-Type': 'application/json',
+          'Prefer': 'return=minimal',
+          'Content-Length': Buffer.byteLength(data)
+        }
+      }, (res) => {
+        let b = '';
+        res.on('data', c => b += c);
+        res.on('end', () => {
+          if (res.statusCode === 201 || res.statusCode === 200) {
+            console.log('Order saved to Supabase');
+          } else {
+            console.error('Supabase error:', res.statusCode, b);
+          }
+          resolve();
+        });
+      });
+      req.on('error', reject);
+      req.write(data);
+      req.end();
+    });
+  } catch (e) {
+    console.error('Supabase save error:', e.message);
+  }
+}
+
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*');
   res.header('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
@@ -97,9 +135,10 @@ app.post('/api/verify-payment', async (req, res) => {
     const selectedPlan = PLANS[planKey] || PLANS.pro;
 
     // Save confirmed order
-    const orderId = `confirmed_${Date.now()}`;
-    const orderRecord = { id: orderId, plan: planKey, planName: selectedPlan.name, amount: selectedPlan.price, fullName, businessName, email, phone, razorpay_payment_id, status: 'paid', createdAt: new Date().toISOString() };
-    fs.writeFileSync(path.join(ordersDir, `${orderId}.json`), JSON.stringify(orderRecord, null, 2));
+    const orderId = 'confirmed_' + Date.now();
+    const orderRecord = { id: orderId, plan: planKey, plan_name: selectedPlan.name, amount: selectedPlan.price, full_name: fullName, business_name: businessName, email, phone, razorpay_payment_id, status: 'paid', created_at: new Date().toISOString() };
+    await saveToSupabase(orderRecord);
+    try { fs.writeFileSync(path.join(ordersDir, orderId + '.json'), JSON.stringify(orderRecord, null, 2)); } catch(e) {}
 
     // Send WhatsApp notification
     if (process.env.CALLMEBOT_APIKEY) {
