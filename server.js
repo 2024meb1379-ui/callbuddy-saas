@@ -250,3 +250,4 @@ app.post('/api/verify-payment', async (req, res) => {
 app.get('/api/health', (req, res) => res.json({ status: 'ok', time: new Date().toISOString() }));
 
 app.listen(PORT, () => console.log(`CallBuddy server running at http://localhost:${PORT}`));
+
