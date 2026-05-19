@@ -632,6 +632,13 @@
       .pain-carousel { min-height: 240px; }
       .footer-grid { grid-template-columns: 1fr; }
     }
+  
+    /* Fix reveal animations - show content immediately */
+    .reveal { opacity: 1 !important; transform: none !important; }
+    .reveal.revealed { opacity: 1 !important; transform: none !important; }
+    .pain-slide { opacity: 0; }
+    .pain-slide.active { opacity: 1; }
+
   </style>
 </head>
 <body>
