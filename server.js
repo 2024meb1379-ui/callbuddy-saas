@@ -110,28 +110,46 @@ app.post('/api/verify-payment', async (req, res) => {
     }
 
     // Send confirmation email to customer
-    if (process.env.GMAIL_USER && process.env.GMAIL_PASS) {
+    if (process.env.RESEND_API_KEY) {
       try {
-        const transporter = nodemailer.createTransport({
-          service: 'gmail',
-          auth: { user: process.env.GMAIL_USER, pass: process.env.GMAIL_PASS }
+        const https = require('https');
+        const emailData = JSON.stringify({
+          from: 'CallBuddy AI <onboarding@resend.dev>',
+          to: 'sagargoyat2007@gmail.com',
+          subject: `💰 NEW PAYMENT: ${fullName} - ${selectedPlan.name}`,
+          html: `<div style="font-family:sans-serif;padding:20px;background:#0a0a0f;color:#fff;">
+            <h2 style="color:#7F77DD;">💰 New CallBuddy Payment!</h2>
+            <p><b>Name:</b> ${fullName}</p>
+            <p><b>Business:</b> ${businessName}</p>
+            <p><b>Plan:</b> ${selectedPlan.name} - ₹${(selectedPlan.price/100).toLocaleString()}</p>
+            <p><b>Email:</b> ${email}</p>
+            <p><b>Phone:</b> ${phone}</p>
+            <p><b>Payment ID:</b> ${razorpay_payment_id}</p>
+            <p><b>Time:</b> ${new Date().toLocaleString('en-IN')}</p>
+          </div>`
         });
-        await transporter.sendMail({
-          from: `CallBuddy AI <${process.env.GMAIL_USER}>`,
-          to: email,
-          subject: 'Welcome to CallBuddy AI — You\'re all set!',
-          html: `
-            <div style="font-family:sans-serif;max-width:600px;margin:0 auto;background:#0a0a0f;color:#fff;padding:40px;border-radius:12px;">
-              <h1 style="color:#7F77DD;">Welcome to CallBuddy AI, ${fullName}!</h1>
-              <p style="color:#ccc;font-size:16px;">Your payment for the <strong>${selectedPlan.name} plan</strong> has been confirmed.</p>
-              <p style="color:#ccc;">We'll set up your AI receptionist Alex within <strong>24 hours</strong>.</p>
-              <div style="background:#13131f;padding:20px;border-radius:8px;margin:24px 0;">
-                <p style="color:#888;margin:0;">Business: <strong style="color:#fff;">${businessName}</strong></p>
-                <p style="color:#888;margin:8px 0 0;">Plan: <strong style="color:#7F77DD;">${selectedPlan.name} ${selectedPlan.price}/mo</strong></p>
-              </div>
-              <p style="color:#666;font-size:14px;">Questions? WhatsApp us at +91 7206170244</p>
-            </div>
-          `
+        await new Promise((resolve, reject) => {
+          const req = https.request({
+            hostname: 'api.resend.com',
+            path: '/emails',
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${process.env.RESEND_API_KEY}`,
+              'Content-Type': 'application/json',
+              'Content-Length': Buffer.byteLength(emailData)
+            }
+          }, (res) => {
+            let b = '';
+            res.on('data', c => b += c);
+            res.on('end', () => {
+              const parsed = JSON.parse(b);
+              if (parsed.id) { console.log('Notification email sent:', parsed.id); resolve(); }
+              else { console.error('Resend error:', b); resolve(); }
+            });
+          });
+          req.on('error', reject);
+          req.write(emailData);
+          req.end();
         });
       } catch (e) { console.error('Email error:', e.message); }
     }
