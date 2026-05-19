@@ -1035,6 +1035,122 @@
     });
   </script>
 
+
+<!-- FAQ Section -->
+<section style="padding:80px 20px;background:#0a0a0f;">
+  <div style="max-width:800px;margin:0 auto;">
+  <h2 style="text-align:center;font-size:2rem;font-weight:700;color:#fff;margin-bottom:12px;">Frequently Asked Questions</h2>
+  <p style="text-align:center;color:#666;margin-bottom:48px;">Real answers about how CallBuddy AI works</p>
+  
+  <div id="faq-list">
+    
+    <div class="faq-item" style="border:1px solid #1a1a2e;border-radius:12px;margin-bottom:12px;overflow:hidden;">
+      <button onclick="toggleFaq(0)" style="width:100%;padding:20px 24px;background:#0d0d18;border:none;cursor:pointer;display:flex;justify-content:space-between;align-items:center;text-align:left;gap:16px;">
+        <span style="color:#fff;font-size:1rem;font-weight:600;">Will it sound like a robot?</span>
+        <span id="faq-icon-0" style="color:#7F77DD;font-size:1.4rem;flex-shrink:0;transition:transform 0.3s;">+</span>
+      </button>
+      <div id="faq-answer-0" style="display:none;padding:0 24px 20px;background:#0d0d18;">
+        <p style="color:#999;line-height:1.7;margin:0;">No. Alex uses OpenAI's most advanced voice AI — the same technology behind ChatGPT. It handles natural conversation, pauses, interruptions, and even unclear speech. Most callers don't realize they're speaking to an AI. The best way to believe it is to hear it — tap the WhatsApp button and ask us for a live demo call.</p>
+      </div>
+    </div>
+    <div class="faq-item" style="border:1px solid #1a1a2e;border-radius:12px;margin-bottom:12px;overflow:hidden;">
+      <button onclick="toggleFaq(1)" style="width:100%;padding:20px 24px;background:#0d0d18;border:none;cursor:pointer;display:flex;justify-content:space-between;align-items:center;text-align:left;gap:16px;">
+        <span style="color:#fff;font-size:1rem;font-weight:600;">What exactly happens when someone calls?</span>
+        <span id="faq-icon-1" style="color:#7F77DD;font-size:1.4rem;flex-shrink:0;transition:transform 0.3s;">+</span>
+      </button>
+      <div id="faq-answer-1" style="display:none;padding:0 24px 20px;background:#0d0d18;">
+        <p style="color:#999;line-height:1.7;margin:0;">Alex answers in under 1 second. It has a real conversation — collects the caller's name, number, address, and what they need. If they want to book an appointment, Alex books it directly into your Google Calendar and sends the customer an SMS confirmation immediately. You get an alert with full details the moment it happens.</p>
+      </div>
+    </div>
+    <div class="faq-item" style="border:1px solid #1a1a2e;border-radius:12px;margin-bottom:12px;overflow:hidden;">
+      <button onclick="toggleFaq(2)" style="width:100%;padding:20px 24px;background:#0d0d18;border:none;cursor:pointer;display:flex;justify-content:space-between;align-items:center;text-align:left;gap:16px;">
+        <span style="color:#fff;font-size:1rem;font-weight:600;">Does it actually book appointments automatically?</span>
+        <span id="faq-icon-2" style="color:#7F77DD;font-size:1.4rem;flex-shrink:0;transition:transform 0.3s;">+</span>
+      </button>
+      <div id="faq-answer-2" style="display:none;padding:0 24px 20px;background:#0d0d18;">
+        <p style="color:#999;line-height:1.7;margin:0;">Yes. Alex connects directly to your Google Calendar. From the moment a customer says they want to book — to a confirmed calendar event with their details — zero human involvement needed. You see the booking the moment it's made.</p>
+      </div>
+    </div>
+    <div class="faq-item" style="border:1px solid #1a1a2e;border-radius:12px;margin-bottom:12px;overflow:hidden;">
+      <button onclick="toggleFaq(3)" style="width:100%;padding:20px 24px;background:#0d0d18;border:none;cursor:pointer;display:flex;justify-content:space-between;align-items:center;text-align:left;gap:16px;">
+        <span style="color:#fff;font-size:1rem;font-weight:600;">What about after-hours calls?</span>
+        <span id="faq-icon-3" style="color:#7F77DD;font-size:1.4rem;flex-shrink:0;transition:transform 0.3s;">+</span>
+      </button>
+      <div id="faq-answer-3" style="display:none;padding:0 24px 20px;background:#0d0d18;">
+        <p style="color:#999;line-height:1.7;margin:0;">That's where CallBuddy shines most. Alex answers at 3AM the same way it answers at 3PM. After-hours callers are handled gracefully — Alex takes their details, books where possible, and tells them when your team will follow up. No missed opportunities overnight.</p>
+      </div>
+    </div>
+    <div class="faq-item" style="border:1px solid #1a1a2e;border-radius:12px;margin-bottom:12px;overflow:hidden;">
+      <button onclick="toggleFaq(4)" style="width:100%;padding:20px 24px;background:#0d0d18;border:none;cursor:pointer;display:flex;justify-content:space-between;align-items:center;text-align:left;gap:16px;">
+        <span style="color:#fff;font-size:1rem;font-weight:600;">What if Alex can't answer a question?</span>
+        <span id="faq-icon-4" style="color:#7F77DD;font-size:1.4rem;flex-shrink:0;transition:transform 0.3s;">+</span>
+      </button>
+      <div id="faq-answer-4" style="display:none;padding:0 24px 20px;background:#0d0d18;">
+        <p style="color:#999;line-height:1.7;margin:0;">Alex is trained with your business details — services, pricing, hours, service area. For anything outside that, it politely takes the customer's details and flags it for you to follow up. It never leaves a caller hanging.</p>
+      </div>
+    </div>
+    <div class="faq-item" style="border:1px solid #1a1a2e;border-radius:12px;margin-bottom:12px;overflow:hidden;">
+      <button onclick="toggleFaq(5)" style="width:100%;padding:20px 24px;background:#0d0d18;border:none;cursor:pointer;display:flex;justify-content:space-between;align-items:center;text-align:left;gap:16px;">
+        <span style="color:#fff;font-size:1rem;font-weight:600;">Does it send reminders to customers?</span>
+        <span id="faq-icon-5" style="color:#7F77DD;font-size:1.4rem;flex-shrink:0;transition:transform 0.3s;">+</span>
+      </button>
+      <div id="faq-answer-5" style="display:none;padding:0 24px 20px;background:#0d0d18;">
+        <p style="color:#999;line-height:1.7;margin:0;">Yes. Customers get an SMS confirmation immediately after booking, a reminder 24 hours before their appointment, and another 1 hour before. After the job, it sends a review request. 30 days later, a follow-up for repeat business. All automatic.</p>
+      </div>
+    </div>
+    <div class="faq-item" style="border:1px solid #1a1a2e;border-radius:12px;margin-bottom:12px;overflow:hidden;">
+      <button onclick="toggleFaq(6)" style="width:100%;padding:20px 24px;background:#0d0d18;border:none;cursor:pointer;display:flex;justify-content:space-between;align-items:center;text-align:left;gap:16px;">
+        <span style="color:#fff;font-size:1rem;font-weight:600;">How long does setup take?</span>
+        <span id="faq-icon-6" style="color:#7F77DD;font-size:1.4rem;flex-shrink:0;transition:transform 0.3s;">+</span>
+      </button>
+      <div id="faq-answer-6" style="display:none;padding:0 24px 20px;background:#0d0d18;">
+        <p style="color:#999;line-height:1.7;margin:0;">48 hours. After you sign up, we configure Alex with your business name, services, pricing, hours, and Google Calendar. You're live by the next morning. No technical knowledge needed from your side.</p>
+      </div>
+    </div>
+    <div class="faq-item" style="border:1px solid #1a1a2e;border-radius:12px;margin-bottom:12px;overflow:hidden;">
+      <button onclick="toggleFaq(7)" style="width:100%;padding:20px 24px;background:#0d0d18;border:none;cursor:pointer;display:flex;justify-content:space-between;align-items:center;text-align:left;gap:16px;">
+        <span style="color:#fff;font-size:1rem;font-weight:600;">What's the difference between plans?</span>
+        <span id="faq-icon-7" style="color:#7F77DD;font-size:1.4rem;flex-shrink:0;transition:transform 0.3s;">+</span>
+      </button>
+      <div id="faq-answer-7" style="display:none;padding:0 24px 20px;background:#0d0d18;">
+        <p style="color:#999;line-height:1.7;margin:0;">Starter covers basic call answering and lead capture. Pro adds appointment booking, SMS confirmations, reminders, and calendar integration — the full system. Agency is for multiple locations or businesses. Most clients choose Pro.</p>
+      </div>
+    </div>
+    <div class="faq-item" style="border:1px solid #1a1a2e;border-radius:12px;margin-bottom:12px;overflow:hidden;">
+      <button onclick="toggleFaq(8)" style="width:100%;padding:20px 24px;background:#0d0d18;border:none;cursor:pointer;display:flex;justify-content:space-between;align-items:center;text-align:left;gap:16px;">
+        <span style="color:#fff;font-size:1rem;font-weight:600;">Can I cancel anytime?</span>
+        <span id="faq-icon-8" style="color:#7F77DD;font-size:1.4rem;flex-shrink:0;transition:transform 0.3s;">+</span>
+      </button>
+      <div id="faq-answer-8" style="display:none;padding:0 24px 20px;background:#0d0d18;">
+        <p style="color:#999;line-height:1.7;margin:0;">Yes. No contracts, no lock-in. Cancel before your next billing date and you won't be charged again. We also offer a full refund within 7 days if you're not satisfied — no questions asked.</p>
+      </div>
+    </div>
+  </div>
+
+  <div style="text-align:center;margin-top:40px;">
+    <p style="color:#666;">Still have questions? We reply in minutes.</p>
+    <a href="https://wa.me/917206170244?text=Hi%2C%20I%20have%20a%20question%20about%20CallBuddy%20AI" 
+       target="_blank"
+       style="display:inline-block;margin-top:12px;padding:12px 28px;background:transparent;border:1px solid #7F77DD;color:#7F77DD;border-radius:8px;text-decoration:none;font-weight:600;">
+      Ask us on WhatsApp
+    </a>
+  </div>
+  </div>
+</section>
+
+<script>
+function toggleFaq(i) {
+  const answer = document.getElementById('faq-answer-' + i);
+  const icon = document.getElementById('faq-icon-' + i);
+  if (answer.style.display === 'none') {
+    answer.style.display = 'block';
+    icon.textContent = '−';
+  } else {
+    answer.style.display = 'none';
+    icon.textContent = '+';
+  }
+}
+</script>
 <!-- WhatsApp Float Button -->
 <a href="https://wa.me/917206170244?text=Hi%2C%20I%20want%20to%20know%20more%20about%20CallBuddy%20AI" 
    target="_blank"
