@@ -29,7 +29,8 @@ const PLANS = {
   agency:  { name: 'Agency',  price: '$499', amountINR: 49900 }
 };
 
-app.use(express.json());
+app.use(require('cors')());
+app.use(express.json());;
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Health check
