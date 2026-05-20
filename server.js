@@ -128,8 +128,11 @@ app.post('/api/verify-payment', async (req, res) => {
     // Send confirmation email to customer
     if (process.env.GMAIL_USER && order) {
       const transporter = nodemailer.createTransport({
-        service: 'gmail',
-        auth: { user: process.env.GMAIL_USER, pass: process.env.GMAIL_PASS }
+        host: 'smtp.gmail.com',
+        port: 587,
+        secure: false,
+        auth: { user: process.env.GMAIL_USER, pass: process.env.GMAIL_PASS },
+        tls: { rejectUnauthorized: false }
       });
       await transporter.sendMail({
         from: `CallBuddy AI <${process.env.GMAIL_USER}>`,
