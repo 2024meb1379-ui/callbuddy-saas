@@ -1,84 +1,27 @@
 require('dotenv').config();
-const rateLimit = require('express-rate-limit');
-const helmet = require('helmet');
-
 const express = require('express');
 const path = require('path');
 const fs = require('fs');
 const nodemailer = require('nodemailer');
 const axios = require('axios');
+const Razorpay = require('razorpay');
 const crypto = require('crypto');
+const { createClient } = require('@supabase/supabase-js');
 
 const app = express();
-app.use(express.json());
-// Security headers
-app.use(helmet({ contentSecurityPolicy: false }));
-
-// Rate limiting - max 20 requests per 15 minutes per IP
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 20,
-  message: { success: false, message: 'Too many requests. Please try again later.' }
-});
-app.use('/api/', limiter);
-
-// Stricter limit on order creation - max 5 per 15 minutes
-const orderLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 5,
-  message: { success: false, message: 'Too many order attempts. Please try again later.' }
-});
-app.use('/api/create-order', orderLimiter);
-
-// Supabase helper
-async function saveToSupabase(order) {
-  try {
-    const https = require('https');
-    const data = JSON.stringify(order);
-    await new Promise((resolve, reject) => {
-      const req = https.request({
-        hostname: 'kzvwdsccrdxrktkhlpxw.supabase.co',
-        path: '/rest/v1/orders',
-        method: 'POST',
-        headers: {
-          'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt6dndkc2NjcmR4cmt0a2xocHh3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkwNzYyMTEsImV4cCI6MjA5NDY1MjIxMX0.ufBIHpDOZrd3XRl-2e2tXVLyCuER9bC0fm_Pa9kxfCQ',
-          'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt6dndkc2NjcmR4cmt0a2xocHh3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkwNzYyMTEsImV4cCI6MjA5NDY1MjIxMX0.ufBIHpDOZrd3XRl-2e2tXVLyCuER9bC0fm_Pa9kxfCQ',
-          'Content-Type': 'application/json',
-          'Prefer': 'return=minimal',
-          'Content-Length': Buffer.byteLength(data)
-        }
-      }, (res) => {
-        let b = '';
-        res.on('data', c => b += c);
-        res.on('end', () => {
-          if (res.statusCode === 201 || res.statusCode === 200) {
-            console.log('Order saved to Supabase');
-          } else {
-            console.error('Supabase error:', res.statusCode, b);
-          }
-          resolve();
-        });
-      });
-      req.on('error', reject);
-      req.write(data);
-      req.end();
-    });
-  } catch (e) {
-    console.error('Supabase save error:', e.message);
-  }
-}
-
-app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', '*');
-  res.header('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Content-Type');
-  if (req.method === 'OPTIONS') return res.sendStatus(200);
-  next();
-});
-
-app.use(express.static(path.join(__dirname, 'public')));
-
 const PORT = process.env.PORT || 3001;
+
+// Supabase
+const supabase = createClient(
+  'https://kzvwdsccrdxrktklhpxw.supabase.co',
+  process.env.SUPABASE_SERVICE_KEY
+);
+
+// Razorpay
+const razorpay = new Razorpay({
+  key_id: process.env.RAZORPAY_KEY_ID,
+  key_secret: process.env.RAZORPAY_KEY_SECRET
+});
 
 const PLANS = {
   starter: { name: 'Starter', price: '$149', amountINR: 14900 },
@@ -86,168 +29,129 @@ const PLANS = {
   agency:  { name: 'Agency',  price: '$499', amountINR: 49900 }
 };
 
-// Ensure orders dir exists
-const ordersDir = path.join(__dirname, 'data', 'orders');
-if (!fs.existsSync(ordersDir)) fs.mkdirSync(ordersDir, { recursive: true });
+app.use(express.json());
+app.use(express.static(path.join(__dirname, 'public')));
 
-// ── CREATE ORDER ──────────────────────────────────────────────
+// Health check
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'ok', time: new Date().toISOString() });
+});
 
-// Input validation helper
-function validateOrderInput(data) {
-  const { fullName, businessName, email, phone, plan } = data;
-  const errors = [];
-  
-  if (!fullName || fullName.trim().length < 2 || fullName.trim().length > 100) 
-    errors.push('Invalid name');
-  if (!businessName || businessName.trim().length < 2 || businessName.trim().length > 100) 
-    errors.push('Invalid business name');
-  if (!email || !/^[^s@]+@[^s@]+.[^s@]+$/.test(email)) 
-    errors.push('Invalid email');
-  if (!phone || !/^[0-9+-s]{7,15}$/.test(phone)) 
-    errors.push('Invalid phone');
-  if (!plan || !['starter', 'pro', 'agency'].includes(plan.toLowerCase())) 
-    errors.push('Invalid plan');
-  
-  return errors;
-}
+// Create Razorpay order
 app.post('/api/create-order', async (req, res) => {
   try {
-    // Validate input
-    const validationErrors = validateOrderInput(req.body);
-    if (validationErrors.length > 0) {
-      return res.status(400).json({ success: false, message: validationErrors.join(', ') });
-    }
-        const { plan, fullName, businessName, email, phone } = req.body || {};
+    const { plan, fullName, businessName, email, phone } = req.body || {};
 
     if (!fullName || !businessName || !email || !phone) {
-      return res.status(400).json({ success: false, message: 'All fields are required.' });
+      return res.status(400).json({ message: 'All fields are required.' });
     }
 
     const planKey = String(plan || 'pro').toLowerCase();
     const selectedPlan = PLANS[planKey];
     if (!selectedPlan) {
-      return res.status(400).json({ success: false, message: 'Invalid plan selected.' });
+      return res.status(400).json({ message: 'Invalid plan.' });
     }
-
-    let razorpayOrderId = null;
 
     // Create Razorpay order
-    if (process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET) {
-      try {
-        const Razorpay = require('razorpay');
-        const razorpay = new Razorpay({
-          key_id: process.env.RAZORPAY_KEY_ID ,
-          key_secret: process.env.RAZORPAY_KEY_SECRET 
-        });
-        const rzpOrder = await razorpay.orders.create({
-          amount: selectedPlan.amountINR * 100, // paise
-          currency: 'INR',
-          receipt: `order_${Date.now()}`
-        });
-        razorpayOrderId = rzpOrder.id;
-      } catch (rzpErr) {
-        console.error('Razorpay order error FULL:', JSON.stringify(rzpErr), rzpErr.message, rzpErr.statusCode, rzpErr.error);
-        // Continue without razorpay in dev
-      }
-    }
+    const razorpayOrder = await razorpay.orders.create({
+      amount: selectedPlan.amountINR * 100, // paise
+      currency: 'INR',
+      receipt: `order_${Date.now()}`,
+      notes: { plan: planKey, email, businessName }
+    });
 
-    // Save pending order
-    const orderId = `order_${Date.now()}`;
-    const orderRecord = { id: orderId, plan: planKey, planName: selectedPlan.name, amount: selectedPlan.price, fullName, businessName, email, phone, razorpayOrderId, status: 'pending', createdAt: new Date().toISOString() };
-    fs.writeFileSync(path.join(ordersDir, `${orderId}.json`), JSON.stringify(orderRecord, null, 2));
+    // Save pending order to Supabase
+    await supabase.from('orders').insert({
+      id: razorpayOrder.id,
+      plan: planKey,
+      plan_name: selectedPlan.name,
+      amount: selectedPlan.amountINR,
+      full_name: fullName,
+      business_name: businessName,
+      email,
+      phone,
+      status: 'pending'
+    });
 
-    return res.json({ success: true, orderId, razorpayOrderId, plan: planKey });
+    res.json({
+      success: true,
+      orderId: razorpayOrder.id,
+      amount: selectedPlan.amountINR * 100,
+      currency: 'INR',
+      keyId: process.env.RAZORPAY_KEY_ID,
+      customerName: fullName,
+      customerEmail: email,
+      customerPhone: phone
+    });
+
   } catch (err) {
-    console.error('create-order error:', err);
-    return res.status(500).json({ success: false, message: err.message || 'Failed to create order.' });
+    console.error('create-order error:', err.message);
+    res.status(500).json({ message: err.message || 'Failed to create order.' });
   }
 });
 
-// ── VERIFY PAYMENT ────────────────────────────────────────────
+// Verify payment after Razorpay success
 app.post('/api/verify-payment', async (req, res) => {
   try {
-    const { razorpay_order_id, razorpay_payment_id, razorpay_signature, fullName, businessName, email, phone, plan } = req.body;
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
 
     // Verify signature
-    if (process.env.RAZORPAY_KEY_SECRET && razorpay_order_id && razorpay_payment_id && razorpay_signature) {
-      const body = razorpay_order_id + '|' + razorpay_payment_id;
-      const expectedSig = crypto.createHmac('sha256', process.env.RAZORPAY_KEY_SECRET).update(body).digest('hex');
-      if (expectedSig !== razorpay_signature) {
-        return res.status(400).json({ success: false, message: 'Payment verification failed.' });
-      }
+    const body = razorpay_order_id + '|' + razorpay_payment_id;
+    const expectedSignature = crypto
+      .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
+      .update(body)
+      .digest('hex');
+
+    if (expectedSignature !== razorpay_signature) {
+      return res.status(400).json({ message: 'Payment verification failed.' });
     }
 
-    const planKey = String(plan || 'pro').toLowerCase();
-    const selectedPlan = PLANS[planKey] || PLANS.pro;
+    // Update order in Supabase
+    const { data: order } = await supabase
+      .from('orders')
+      .update({ status: 'paid', payment_id: razorpay_payment_id })
+      .eq('id', razorpay_order_id)
+      .select()
+      .single();
 
-    // Save confirmed order
-    const orderId = 'confirmed_' + Date.now();
-    const orderRecord = { id: orderId, plan: planKey, plan_name: selectedPlan.name, amount: selectedPlan.price, full_name: fullName, business_name: businessName, email, phone, razorpay_payment_id, status: 'paid', created_at: new Date().toISOString() };
-    await saveToSupabase(orderRecord);
-    try { fs.writeFileSync(path.join(ordersDir, orderId + '.json'), JSON.stringify(orderRecord, null, 2)); } catch(e) {}
-
-    // Send WhatsApp notification
-    if (process.env.CALLMEBOT_APIKEY) {
-      try {
-        const msg = encodeURIComponent(`💰 NEW CALLBUDDY PAYMENT!\nName: ${fullName}\nBusiness: ${businessName}\nPlan: ${selectedPlan.name} ${selectedPlan.price}\nEmail: ${email}\nPhone: ${phone}`);
-        await axios.get(`https://api.callmebot.com/whatsapp.php?phone=${process.env.CALLMEBOT_PHONE}&text=${msg}&apikey=${process.env.CALLMEBOT_APIKEY}`);
-      } catch (e) { console.error('WhatsApp error:', e.message); }
+    // Send WhatsApp notification to you
+    if (process.env.CALLMEBOT_APIKEY && order) {
+      const msg = encodeURIComponent(
+        `New CallBuddy payment!\nName: ${order.full_name}\nBusiness: ${order.business_name}\nPlan: ${order.plan_name}\nAmount: ₹${order.amount}\nEmail: ${order.email}\nPhone: ${order.phone}`
+      );
+      await axios.get(
+        `https://api.callmebot.com/whatsapp.php?phone=${process.env.CALLMEBOT_PHONE}&text=${msg}&apikey=${process.env.CALLMEBOT_APIKEY}`
+      ).catch(e => console.log('WhatsApp error:', e.message));
     }
 
     // Send confirmation email to customer
-    if (process.env.RESEND_API_KEY) {
-      try {
-        const https = require('https');
-        const emailData = JSON.stringify({
-          from: 'CallBuddy AI <onboarding@resend.dev>',
-          to: 'sagargoyat2007@gmail.com',
-          subject: `💰 NEW PAYMENT: ${fullName} - ${selectedPlan.name}`,
-          html: `<div style="font-family:sans-serif;padding:20px;background:#0a0a0f;color:#fff;">
-            <h2 style="color:#7F77DD;">💰 New CallBuddy Payment!</h2>
-            <p><b>Name:</b> ${fullName}</p>
-            <p><b>Business:</b> ${businessName}</p>
-            <p><b>Plan:</b> ${selectedPlan.name} - ₹${(selectedPlan.price/100).toLocaleString()}</p>
-            <p><b>Email:</b> ${email}</p>
-            <p><b>Phone:</b> ${phone}</p>
-            <p><b>Payment ID:</b> ${razorpay_payment_id}</p>
-            <p><b>Time:</b> ${new Date().toLocaleString('en-IN')}</p>
-          </div>`
-        });
-        await new Promise((resolve, reject) => {
-          const req = https.request({
-            hostname: 'api.resend.com',
-            path: '/emails',
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${process.env.RESEND_API_KEY}`,
-              'Content-Type': 'application/json',
-              'Content-Length': Buffer.byteLength(emailData)
-            }
-          }, (res) => {
-            let b = '';
-            res.on('data', c => b += c);
-            res.on('end', () => {
-              const parsed = JSON.parse(b);
-              if (parsed.id) { console.log('Notification email sent:', parsed.id); resolve(); }
-              else { console.error('Resend error:', b); resolve(); }
-            });
-          });
-          req.on('error', reject);
-          req.write(emailData);
-          req.end();
-        });
-      } catch (e) { console.error('Email error:', e.message); }
+    if (process.env.GMAIL_USER && order) {
+      const transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: { user: process.env.GMAIL_USER, pass: process.env.GMAIL_PASS }
+      });
+      await transporter.sendMail({
+        from: `CallBuddy AI <${process.env.GMAIL_USER}>`,
+        to: order.email,
+        subject: 'Welcome to CallBuddy AI — You\'re all set!',
+        html: `
+          <h2>Welcome to CallBuddy AI, ${order.full_name}!</h2>
+          <p>Your payment of ₹${order.amount} for the <strong>${order.plan_name}</strong> plan has been confirmed.</p>
+          <p>We'll set up your AI receptionist within 24 hours.</p>
+          <p>Questions? WhatsApp us at +91 7206170244</p>
+          <br><p>Team CallBuddy AI</p>
+        `
+      }).catch(e => console.log('Email error:', e.message));
     }
 
-    return res.json({ success: true, message: 'Payment verified and confirmed.' });
+    res.json({ success: true });
+
   } catch (err) {
-    console.error('verify-payment error:', err);
-    return res.status(500).json({ success: false, message: err.message });
+    console.error('verify-payment error:', err.message);
+    res.status(500).json({ message: 'Verification failed.' });
   }
 });
 
-// ── HEALTH ────────────────────────────────────────────────────
-app.get('/api/health', (req, res) => res.json({ status: 'ok', time: new Date().toISOString() }));
-
-app.listen(PORT, () => console.log(`CallBuddy server running at http://localhost:${PORT}`));
-
+app.listen(PORT, () => {
+  console.log(`CallBuddy server running at http://localhost:${PORT}`);
+});
