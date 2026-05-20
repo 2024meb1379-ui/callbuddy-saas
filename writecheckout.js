@@ -1,4 +1,6 @@
-<!DOCTYPE html>
+const fs = require('fs');
+
+const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -110,7 +112,7 @@ async function handlePayment() {
     return;
   }
 
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const emailRegex = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/;
   if (!emailRegex.test(email)) {
     errDiv.textContent = 'Please enter a valid email.';
     return;
@@ -191,4 +193,9 @@ async function handlePayment() {
 }
 </script>
 </body>
-</html>
+</html>`;
+
+fs.writeFileSync('public/checkout.html', html);
+console.log('DONE - size:', html.length);
+console.log('Has verify:', html.includes('verify-payment'));
+console.log('Has onrender:', html.includes('onrender'));
