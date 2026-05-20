@@ -81,9 +81,9 @@ app.use(express.static(path.join(__dirname, 'public')));
 const PORT = process.env.PORT || 3001;
 
 const PLANS = {
-  starter: { name: 'Starter', price: '$149', amountINR: 12400 },
-  pro:     { name: 'Pro',     price: '$249', amountINR: 20700 },
-  agency:  { name: 'Agency',  price: '$499', amountINR: 41500 }
+  starter: { name: 'Starter', price: '$149', amountINR: 14900 },
+  pro:     { name: 'Pro',     price: '$249', amountINR: 24900 },
+  agency:  { name: 'Agency',  price: '$499', amountINR: 49900 }
 };
 
 // Ensure orders dir exists
